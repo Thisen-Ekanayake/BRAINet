@@ -3,8 +3,8 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
 # === directories ===
-train_dir = 'Dataset/Training'
-test_dir = 'Dataset/Testing'
+train_dir = 'Dataset_binary/Training'
+test_dir = 'Dataset_binary/Testing'
 
 # === transformation ===
 train_transforms = transforms.Compose([
