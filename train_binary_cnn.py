@@ -51,8 +51,8 @@ print("Model saved as binary_cnn_v2.pth")
 
 # === plot loss vs accuracy ===
 plt.figure()
-plt.plot(range(1, num_epochs+1), train_losses, labels="Train Loss")
-plt.plot(range(1, num_epochs+1), test_accuracies, labels="Test Accuracy")
+plt.plot(range(1, num_epochs+1), train_losses, label="Train Loss")
+plt.plot(range(1, num_epochs+1), test_accuracies, label="Test Accuracy")
 plt.xlabel("Epoch")
 plt.ylabel("Value")
 plt.title("Training Loss& Test Accuracy")
