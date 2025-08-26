@@ -4,6 +4,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 from torchvision import models
 from dataset_preprocessing import train_loader, test_loader
+import time
 
 # === device setup ===
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -27,13 +28,18 @@ criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.Adam(
     list(model.layer4.parameters()) + list(model.fc.parameters()),
     lr=1e-4
-    )
+)
 
 # === training setup ===
 num_epochs = 5
 train_losses, test_accuracies = [], []
 
+# === start total timer ===
+total_start = time.time()
+
 for epoch in range(num_epochs):
+    epoch_start = time.time()  # per-epoch timer
+
     # --- training ---
     model.train()
     running_loss = 0.0
@@ -61,7 +67,15 @@ for epoch in range(num_epochs):
     acc = correct / total
     test_accuracies.append(acc)
 
-    print(f"Epoch {epoch+1}/{num_epochs}, Loss: {avg_loss:.4f}, Test Accuracy: {acc*100:.2f}%")
+    epoch_end = time.time()
+    print(f"Epoch {epoch+1}/{num_epochs}, Loss: {avg_loss:.4f}, "
+          f"Test Accuracy: {acc*100:.2f}%, "
+          f"Time: {epoch_end - epoch_start:.2f} sec")
+
+# === total training time ===
+total_end = time.time()
+print(f"\nTotal training time: {total_end - total_start:.2f} seconds "
+      f"({(total_end - total_start)/60:.2f} minutes)")
 
 # === save model ===
 torch.save(model.state_dict(), "resnet18_binary_layer4.pth")
