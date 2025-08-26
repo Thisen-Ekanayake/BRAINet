@@ -17,12 +17,17 @@ model = model.to(device)
 # === freeze early layers (optional) ===
 for param in model.parameters():
     param.requires_grad = False
+for param in model.layer4.parameters():
+    param.requires_grad = True
 for param in model.fc.parameters():
     param.requires_grad = True
 
 # === loss and optimizer ===
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.Adam(model.fc.parameters(), lr=1e-4)
+optimizer = optim.Adam(
+    list(model.layer4.parameters()) + list(model.fc.parameters()),
+    lr=1e-4
+    )
 
 # === training setup ===
 num_epochs = 5
@@ -59,8 +64,8 @@ for epoch in range(num_epochs):
     print(f"Epoch {epoch+1}/{num_epochs}, Loss: {avg_loss:.4f}, Test Accuracy: {acc*100:.2f}%")
 
 # === save model ===
-torch.save(model.state_dict(), "resnet18_binary.pth")
-print("Model saved as resnet18_binary.pth")
+torch.save(model.state_dict(), "resnet18_binary_layer4.pth")
+print("Model saved as resnet18_binary_layer4.pth")
 
 # === plot curves ===
 plt.figure()
