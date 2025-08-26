@@ -13,7 +13,7 @@ model = models.resnet18(pretrained=False)
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 1)
 model = model.to(device)
-model.load_state_dict(torch.load("resnet18_binary.pth"))
+model.load_state_dict(torch.load("resnet18_binary_layer4.pth"))
 model.eval()
 
 # === evaluation ===
