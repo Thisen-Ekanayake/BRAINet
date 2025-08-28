@@ -214,3 +214,6 @@ charts/
 *.pdf
 *.pth
 *.png
+*.jpg
+
+!Brain_Tumor_Detection_Pipeline_(Binary_Classification).pdf
