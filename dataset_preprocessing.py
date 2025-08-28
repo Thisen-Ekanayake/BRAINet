@@ -27,7 +27,7 @@ test_dataset = datasets.ImageFolder(root=test_dir, transform=test_transforms)
 
 # === data loaders ===
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-test_loader = DataLoader(train_dataset, batch_size=16, shuffle=False)
+test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
 # === quick check ===
 print(f"Number of training samples: {len(train_dataset)}")
