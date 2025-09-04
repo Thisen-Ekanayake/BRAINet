@@ -208,6 +208,7 @@ __marimo__/
 
 Dataset/
 Dataset_binary/
+Dataset_multi_class/
 charts/
 
 *.docx
