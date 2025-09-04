@@ -14,7 +14,7 @@ from torchvision import models
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Choose which model to evaluate (CNN or ResNet)
-model_type = "cnn"  # Change to "cnn" if evaluating CNN model
+model_type = "ResNet"  # Change to "cnn" if evaluating CNN model
 
 if model_type == "cnn":
     model = MultiClassCNN(num_classes=4).to(device)
