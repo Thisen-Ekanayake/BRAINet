@@ -5,8 +5,8 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 import numpy as np
 
 # === directories ===
-train_dir = 'Dataset_multi/Training'
-test_dir = 'Dataset_multi/Testing'
+train_dir = '../Dataset_multi_class/Training'
+test_dir = '../Dataset_multi_class/Testing'
 
 # === transformation ===
 train_transforms = transforms.Compose([
