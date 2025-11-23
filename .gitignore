@@ -224,3 +224,6 @@ node_modules/
 *.zip
 
 !Brain_Tumor_Detection_Pipeline_(Binary_Classification).pdf
+
+frontend/DEVELOPMENT.md
+frontend/README.md
