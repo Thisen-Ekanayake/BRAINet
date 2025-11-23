@@ -1,0 +1,24 @@
+{
+  "name": "brainet-frontend",
+  "version": "1.0.0",
+  "description": "BRAINet - Brain Radiology Analysis with Intelligent Networks",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.3.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.7",
+    "postcss": "^8.4.14",
+    "tailwindcss": "^3.1.6",
+    "vite": "^5.1.0"
+  }
+}
