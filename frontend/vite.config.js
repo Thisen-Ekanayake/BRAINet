@@ -24,6 +24,6 @@ export default defineConfig({
       },
     },
   },
-  base: process.env.VITE_BASE_URL || "/BRAINet",
+  base: process.env.VITE_BASE_URL || "/",
 })
 
