@@ -222,6 +222,7 @@ node_modules/
 *.csv
 *.h5
 *.zip
+*.txt
 
 !Brain_Tumor_Detection_Pipeline_(Binary_Classification).pdf
 
