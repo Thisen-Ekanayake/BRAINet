@@ -1,13 +1,17 @@
-# inference.py
 import torch
 from torchvision import transforms
 from PIL import Image
+
+CLASS_NAMES = ["glioma", "meningioma", "notumor", "pituitary"]
 
 def predict(model, device, image_path):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize([0.5], [0.5])
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225]
+        )
     ])
 
     image = Image.open(image_path).convert("RGB")
@@ -15,11 +19,16 @@ def predict(model, device, image_path):
 
     with torch.no_grad():
         logits = model(image)
-        prob = torch.sigmoid(logits).item()
+        probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
 
-    label = "Tumor Detected" if prob > 0.5 else "No Tumor Detected"
+    pred_index = probs.argmax()
+    pred_class = CLASS_NAMES[pred_index]
+    confidence = float(probs[pred_index])
 
     return {
-        "prediction": label,
-        "confidence": prob if label == "Tumor Detected" else (1 - prob)
+        "prediction": pred_class,
+        "confidence": confidence,
+        "all_probabilities": {
+            CLASS_NAMES[i]: float(probs[i]) for i in range(len(CLASS_NAMES))
+        }
     }
