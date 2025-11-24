@@ -10,9 +10,21 @@ from datetime import datetime
 app = FastAPI(title="Brain Tumor Detection API (ResNet18 Binary Classifier)")
 
 # Add CORS middleware
+default_allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://brainet-xi.vercel.app",
+]
+
+allowed_origins = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv("ALLOWED_ORIGINS", ",".join(default_allowed_origins)).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://brainet-xi.vercel.app/"],  # Frontend URLs
+    allow_origins=allowed_origins,  # Frontend URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
