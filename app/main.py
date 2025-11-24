@@ -1,5 +1,4 @@
 # uvicorn app.main:app --reload
-
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from app.model_loader import load_model
@@ -7,9 +6,8 @@ from app.inference import predict
 import os
 from datetime import datetime
 
-app = FastAPI(title="Brain Tumor Detection API (ResNet18 Binary Classifier)")
+app = FastAPI(title="Brain Tumor Detection API (ResNet18 Multi-Class Classifier)")
 
-# Add CORS middleware
 default_allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -24,7 +22,7 @@ allowed_origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,  # Frontend URLs
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,28 +39,20 @@ async def predict_tumor(file: UploadFile = File(...)):
         f.write(await file.read())
 
     result = predict(model, device, file_path)
-
     os.remove(file_path)
 
-    # format response to match frontend expectations
-    detection_value = "Tumor Present" if result["prediction"] == "Tumor Detected" else "No Tumor Detected"
-    confidence_percent = int(result["confidence"] * 100)
     timestamp = datetime.now().isoformat()
-    
+
     return {
         "success": True,
         "results": {
-            "detection": {
-                "value": detection_value,
-                "confidence": confidence_percent,
+            "classification": {
+                "value": result["prediction"],
+                "confidence": int(result["confidence"] * 100),
                 "timestamp": timestamp
             },
-            "classification": {
-                "value": "No Tumor" if detection_value == "No Tumor Detected" else "Tumor Detected",
-                "confidence": confidence_percent if detection_value == "Tumor Detected" else (100 - confidence_percent),
-                "timestamp": timestamp
-            }
+            "all_probabilities": result["all_probabilities"]
         },
         "processingTime": "N/A",
-        "modelVersion": "ResNet18 Binary Classifier"
+        "modelVersion": "ResNet18 Multi-Class Classifier"
     }
