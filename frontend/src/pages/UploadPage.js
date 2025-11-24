@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UploadBox from '../components/UploadBox';
 import ResultCard from '../components/ResultCard';
-import { uploadMRI, analyzeScan, validateFileFormat } from '../services/api';
+import { analyzeScan, validateFileFormat, saveAnalysisToHistory } from '../services/api';
 import { useDarkMode } from '../contexts/DarkModeContext';
 
 const UploadPage = () => {
@@ -28,13 +28,7 @@ const UploadPage = () => {
       return;
     }
 
-    try {
-      setUploadedFile(file);
-      // In a real app, you would upload the file here
-      // await uploadMRI(file);
-    } catch (err) {
-      setError('Failed to upload file. Please try again.');
-    }
+    setUploadedFile(file);
   };
 
   const handleAnalysis = async () => {
@@ -44,21 +38,26 @@ const UploadPage = () => {
     setError(null);
 
     try {
-      // Mock file upload
-      const uploadResponse = await uploadMRI(uploadedFile);
+      // Upload and analyze the file
+      const analysisResponse = await analyzeScan(uploadedFile);
       
-      // Run analysis
-      const analysisResponse = await analyzeScan(uploadResponse.fileId);
-      
-      setAnalysisResults(analysisResponse.results);
-      
-      // Navigate to reports page after successful analysis
-      setTimeout(() => {
-        navigate('/reports', { state: { analysisResults: analysisResponse.results } });
-      }, 2000);
+      if (analysisResponse.success && analysisResponse.results) {
+        setAnalysisResults(analysisResponse.results);
+        
+        // Save to history
+        saveAnalysisToHistory(analysisResponse.results, uploadedFile.name);
+        
+        // Navigate to reports page after successful analysis
+        setTimeout(() => {
+          navigate('/reports', { state: { analysisResults: analysisResponse.results } });
+        }, 2000);
+      } else {
+        setError('Invalid response from server. Please try again.');
+      }
       
     } catch (err) {
-      setError('Analysis failed. Please try again.');
+      console.error('Analysis error:', err);
+      setError(err.message || 'Analysis failed. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
