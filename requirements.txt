@@ -4,3 +4,4 @@ albumentations
 numpy
 fastapi
 uvicorn[standard]
+huggingface_hub
