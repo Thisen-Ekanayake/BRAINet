@@ -33,24 +33,11 @@ const ReportsPage = () => {
 
   const fetchMockReport = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock analysis data
-      setAnalysisData({
-        detection: {
-          value: 'Tumor Present',
-          confidence: 87,
-        },
-        classification: {
-          value: 'Glioma',
-          confidence: 82,
-        },
-        segmentation: {
-          maskGenerated: true,
-          overlayGenerated: true,
-        },
-      });
+      // Try to fetch from API (for future use)
+      const reportData = await fetchReport();
+      if (reportData && reportData.results) {
+        setAnalysisData(reportData.results);
+      }
     } catch (error) {
       console.error('Failed to fetch report:', error);
     } finally {
@@ -68,15 +55,17 @@ const ReportsPage = () => {
   };
 
   const handleDownloadPDF = async () => {
+    if (!analysisData) return;
+    
     setIsDownloading(true);
     try {
-      const pdfBlob = await downloadPDFReport('mock_report_id');
+      const pdfBlob = await downloadPDFReport(analysisData);
       
       // Create download link
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `BRAINet_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = `BRAINet_Report_${new Date().toISOString().split('T')[0]}.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
