@@ -36,16 +36,27 @@ const UploadPage = () => {
 
     setIsAnalyzing(true);
     setError(null);
+    setAnalysisResults(null);
 
     try {
       // Upload and analyze the file
       const analysisResponse = await analyzeScan(uploadedFile);
       
-      if (analysisResponse.success && analysisResponse.results) {
+      if (analysisResponse && analysisResponse.success && analysisResponse.results) {
+        // Validate response structure
+        if (!analysisResponse.results.classification) {
+          throw new Error('Invalid response structure from server');
+        }
+        
         setAnalysisResults(analysisResponse.results);
         
-        // Save to history
-        saveAnalysisToHistory(analysisResponse.results, uploadedFile.name);
+        // Save to history (with error handling)
+        try {
+          saveAnalysisToHistory(analysisResponse.results, uploadedFile.name);
+        } catch (saveError) {
+          console.warn('Failed to save to history:', saveError);
+          // Don't fail the whole operation if history save fails
+        }
         
         // Navigate to reports page after successful analysis
         setTimeout(() => {
@@ -53,13 +64,14 @@ const UploadPage = () => {
         }, 2000);
       } else {
         setError('Invalid response from server. Please try again.');
+        setIsAnalyzing(false);
       }
       
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err.message || 'Analysis failed. Please try again.');
-    } finally {
       setIsAnalyzing(false);
+      setAnalysisResults(null);
     }
   };
 
@@ -143,20 +155,24 @@ const UploadPage = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Detection Result */}
-              <ResultCard
-                title="Tumor Detection"
-                value={analysisResults.detection.value}
-                confidence={analysisResults.detection.confidence}
-                type="detection"
-              />
+              {analysisResults.detection && (
+                <ResultCard
+                  title="Tumor Detection"
+                  value={analysisResults.detection.value}
+                  confidence={analysisResults.detection.confidence}
+                  type="detection"
+                />
+              )}
 
               {/* Classification Result */}
-              <ResultCard
-                title="Tumor Classification"
-                value={analysisResults.classification.value}
-                confidence={analysisResults.classification.confidence}
-                type="classification"
-              />
+              {analysisResults.classification && (
+                <ResultCard
+                  title="Tumor Classification"
+                  value={analysisResults.classification.value}
+                  confidence={analysisResults.classification.confidence}
+                  type="classification"
+                />
+              )}
             </div>
 
             {/* Segmentation Preview */}

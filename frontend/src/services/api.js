@@ -12,18 +12,39 @@ export const analyzeScan = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/predict`, {
-    method: 'POST',
-    body: formData,
-  });
+  // Create AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Failed to analyze scan' }));
-    throw new Error(error.detail || 'Failed to analyze scan');
+  try {
+    const response = await fetch(`${API_BASE_URL}/predict`, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Failed to analyze scan' }));
+      throw new Error(error.detail || `Server error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout. The server is taking too long to respond. Please try again.');
+    }
+    
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Network error. Please check your connection and ensure the backend is running.');
+    }
+    
+    throw error;
   }
-
-  const data = await response.json();
-  return data;
 };
 
 /**
@@ -100,12 +121,18 @@ export const validateFileFormat = (file) => {
  */
 export const saveAnalysisToHistory = (analysisData, fileName) => {
   const history = JSON.parse(localStorage.getItem('analysisHistory') || '[]');
+  
+  // Safely get detection and classification values
+  const detectionValue = analysisData.detection?.value || 'Unknown';
+  const classificationValue = analysisData.classification?.value || 'Unknown';
+  const confidence = analysisData.detection?.confidence || analysisData.classification?.confidence || 0;
+  
   const newEntry = {
     id: `analysis_${Date.now()}`,
     fileName: fileName,
     uploadDate: new Date().toISOString(),
-    result: `${analysisData.detection.value} - ${analysisData.classification.value}`,
-    confidence: analysisData.detection.confidence,
+    result: `${detectionValue} - ${classificationValue}`,
+    confidence: confidence,
     data: analysisData,
   };
   history.unshift(newEntry);
