@@ -6,12 +6,12 @@ from huggingface_hub import hf_hub_download
 def load_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model_path = hf_hub_download(
+    """model_path = hf_hub_download(
         repo_id="ThisenEkanayake/brain-tumor-detection",
         filename="multiclass-classification/multi_class_resnet.pth"
-    )
+    )"""
 
-    # model_path = "classification_multi_class/multi_class_resnet.pth"
+    model_path = "classification_multi_class/multi_class_resnet.pth"
 
     model = models.resnet18(weights=None)
     num_ftrs = model.fc.in_features
@@ -21,4 +21,6 @@ def load_model():
     model.to(device)
     model.eval()
 
-    return model, device
+    target_layer = model.layer4[-1].conv2
+
+    return model, device, target_layer
