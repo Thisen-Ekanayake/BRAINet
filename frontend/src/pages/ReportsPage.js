@@ -113,18 +113,22 @@ const ReportsPage = () => {
         {/* Quick Stats */}
         {analysisData && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <ResultCard
-              title="Tumor Detection"
-              value={analysisData.detection.value}
-              confidence={analysisData.detection.confidence}
-              type="detection"
-            />
-            <ResultCard
-              title="Tumor Classification"
-              value={analysisData.classification.value}
-              confidence={analysisData.classification.confidence}
-              type="classification"
-            />
+            {analysisData.detection && (
+              <ResultCard
+                title="Tumor Detection"
+                value={analysisData.detection.value}
+                confidence={analysisData.detection.confidence}
+                type="detection"
+              />
+            )}
+            {analysisData.classification && (
+              <ResultCard
+                title="Tumor Classification"
+                value={analysisData.classification.value}
+                confidence={analysisData.classification.confidence}
+                type="classification"
+              />
+            )}
           </div>
         )}
 
