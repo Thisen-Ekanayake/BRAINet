@@ -155,6 +155,31 @@ def main():
 
     print("\nDONE! All outputs saved to:", args.output_dir)
 
+def run_gradcam(model, device, image_path, target_layer):
+    from PIL import Image
+    import cv2
+
+    # load image
+    img = cv2.imread(image_path)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_pil = Image.fromarray(img_rgb)
+
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+
+    input_tensor = transform(img_pil).unsqueeze(0).to(device)
+
+    grad_cam_pp = GradCAMPP(model, target_layer)
+    cam, class_idx = grad_cam_pp.generate(input_tensor)
+
+    heatmap = overlay_heatmap(img, cam)
+    bbox = draw_bounding_box(img, cam)
+
+    return heatmap, bbox
+
 
 if __name__ == "__main__":
     main()
