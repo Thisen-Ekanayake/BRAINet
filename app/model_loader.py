@@ -21,4 +21,6 @@ def load_model():
     model.to(device)
     model.eval()
 
-    return model, device
+    target_layer = model.layer4[-1].conv2
+
+    return model, device, target_layer

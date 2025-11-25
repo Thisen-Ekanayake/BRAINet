@@ -7,6 +7,7 @@ from app.inference import predict
 import os
 from datetime import datetime
 import traceback
+from gradcam_pp import run_gradcam
 
 app = FastAPI(title="Brain Tumor Detection API (ResNet18 Multi-Class Classifier)")
 
@@ -30,7 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model, device = load_model()
+model, device, target_layer = load_model()
 
 @app.post("/predict")
 async def predict_tumor(file: UploadFile = File(...)):
@@ -53,7 +54,7 @@ async def predict_tumor(file: UploadFile = File(...)):
             f.write(file_content)
 
         # run prediction
-        result = predict(model, device, file_path)
+        result = predict(model, device, file_path, target_layer)
         
         # determine detection result
         prediction = result["prediction"]
@@ -76,7 +77,8 @@ async def predict_tumor(file: UploadFile = File(...)):
                     "confidence": int(result["confidence"] * 100),
                     "timestamp": timestamp
                 },
-                "all_probabilities": result["all_probabilities"]
+                "all_probabilities": result["all_probabilities"],
+                "visualizations": result["visualizations"]
             },
             "processingTime": "N/A",
             "modelVersion": "ResNet18 Multi-Class Classifier"
