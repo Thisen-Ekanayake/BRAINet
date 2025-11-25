@@ -1,4 +1,5 @@
 import argparse
+import os
 import cv2
 import torch
 import numpy as np
@@ -19,7 +20,6 @@ class GradCAMPP:
         self.gradients = []
         self.activations = []
 
-        # hooks
         target_layer.register_forward_hook(self.save_activation)
         target_layer.register_full_backward_hook(self.save_gradient)
 
@@ -36,18 +36,15 @@ class GradCAMPP:
 
         output = self.model(input_tensor)
 
-        # ff class is not provided, use predicted class
         if class_idx is None:
             class_idx = output.argmax(dim=1).item()
 
-        # backprop
         self.model.zero_grad()
         output[0, class_idx].backward()
 
-        grad = self.gradients[0].squeeze(0)     # [C, H, W]
-        act = self.activations[0].squeeze(0)    # [C, H, W]
+        grad = self.gradients[0].squeeze(0)
+        act = self.activations[0].squeeze(0)
 
-        # ---------------- Grad-CAM++ formula ----------------
         numerator = grad.pow(2)
         denominator = 2 * grad.pow(2) + (act * grad.pow(3)).sum((1, 2), keepdim=True)
         alpha = numerator / (denominator + 1e-7)
@@ -62,9 +59,7 @@ class GradCAMPP:
         cam = cam - cam.min()
         cam = cam / (cam.max() + 1e-7)
 
-        cam = cam.detach()
-        cam = cam.squeeze()
-        cam = cam.cpu().numpy()
+        cam = cam.detach().cpu().numpy()
 
         return cam, class_idx
 
@@ -76,7 +71,6 @@ def overlay_heatmap(img, cam):
     cam = cv2.resize(cam, (img.shape[1], img.shape[0]))
     heatmap = (cam * 255).astype(np.uint8)
     heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-
     blended = cv2.addWeighted(img, 0.6, heatmap, 0.4, 0)
     return blended
 
@@ -86,7 +80,6 @@ def draw_bounding_box(img, cam, threshold=0.5):
     mask = (cam > threshold).astype("uint8") * 255
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
     if not contours:
         return img
 
@@ -103,29 +96,22 @@ def draw_bounding_box(img, cam, threshold=0.5):
 # ================================================================
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--image", type=str, required=True, help="Path to MRI image")
+    parser.add_argument("--input_dir", type=str, required=True, help="Path to dataset folder")
+    parser.add_argument("--output_dir", type=str, required=True, help="Folder to save heatmaps/bboxes")
     args = parser.parse_args()
 
+    # ------------------- Load model -------------------
     print("\nLoading model ...")
-    model = models.resnet18(weights=False)
+    model = models.resnet18(weights=None)
     num_ftrs = model.fc.in_features
     model.fc = torch.nn.Linear(num_ftrs, 4)
+
     model.load_state_dict(torch.load("classification_multi_class/multi_class_resnet.pth", map_location=device))
     model = model.to(device)
     model.eval()
 
-    # target layer (last conv block)
     target_layer = model.layer4[-1].conv2
     grad_cam_pp = GradCAMPP(model, target_layer)
-
-    print("Loading image ...")
-    img = cv2.imread(args.image)
-    if img is None:
-        raise ValueError("Image path is incorrect or image cannot be read.")
-
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    img_pil = Image.fromarray(img_rgb)
 
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -133,23 +119,41 @@ def main():
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
-    input_tensor = transform(img_pil).unsqueeze(0).to(device)
+    # ------------------- Process directory -------------------
+    for root, dirs, files in os.walk(args.input_dir):
+        for file in files:
+            if not file.lower().endswith((".png", ".jpg", ".jpeg")):
+                continue
 
-    print("Generating Grad-CAM++ ...")
-    cam, class_idx = grad_cam_pp.generate(input_tensor)
+            input_path = os.path.join(root, file)
 
-    print(f"Predicted Class Index: {class_idx}")
+            # preserve subfolder structure
+            relative = os.path.relpath(root, args.input_dir)
+            output_subfolder = os.path.join(args.output_dir, relative)
+            os.makedirs(output_subfolder, exist_ok=True)
 
-    # visual outputs
-    heatmap_overlay = overlay_heatmap(img, cam)
-    boxed = draw_bounding_box(img, cam)
+            print(f"Processing {input_path} ...")
 
-    cv2.imwrite("cam_heatmap.png", heatmap_overlay)
-    cv2.imwrite("cam_bounding_box.png", boxed)
+            img = cv2.imread(input_path)
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img_pil = Image.fromarray(img_rgb)
 
-    print("\nSaved:")
-    print(" - cam_heatmap.png")
-    print(" - cam_bounding_box.png\n")
+            input_tensor = transform(img_pil).unsqueeze(0).to(device)
+
+            # generate CAM
+            cam, class_idx = grad_cam_pp.generate(input_tensor)
+
+            heatmap = overlay_heatmap(img, cam)
+            bbox = draw_bounding_box(img, cam)
+
+            basename = os.path.splitext(file)[0]
+            heatmap_path = os.path.join(output_subfolder, f"{basename}_heatmap.png")
+            bbox_path = os.path.join(output_subfolder, f"{basename}_bbox.png")
+
+            cv2.imwrite(heatmap_path, heatmap)
+            cv2.imwrite(bbox_path, bbox)
+
+    print("\nDONE! All outputs saved to:", args.output_dir)
 
 
 if __name__ == "__main__":
