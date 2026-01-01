@@ -2,6 +2,15 @@
 
 An AI-powered web application for comprehensive MRI scan analysis, featuring brain tumor detection, classification, and segmentation using deep learning models.
 
+---
+
+## End-to-End Pipeline
+
+The high-level architecture of the system is shown below.
+![BRAINet Pipeline](docs/BRAINet.png)
+
+---
+
 ## Features
 
 - **Binary Tumor Detection**: Detect presence or absence of brain tumors
@@ -9,6 +18,8 @@ An AI-powered web application for comprehensive MRI scan analysis, featuring bra
 - **Visualizations**: GradCAM heatmaps and bounding box visualizations
 - **Report Generation**: Professional analysis reports with confidence scores
 - **Modern UI**: Responsive React frontend with dark mode support
+
+---
 
 ## Tech Stack
 
@@ -22,6 +33,8 @@ An AI-powered web application for comprehensive MRI scan analysis, featuring bra
 - PyTorch
 - ResNet18 (Transfer Learning)
 - Custom CNNs
+
+---
 
 ## Project Structure
 
@@ -39,6 +52,8 @@ An AI-powered web application for comprehensive MRI scan analysis, featuring bra
 ├── classification_multi_class/ # Multi-class classification models
 └── segmentation_with_unet/    # U-Net segmentation models
 ```
+
+---
 
 ## Setup
 
@@ -80,10 +95,14 @@ npm run dev
 
 The frontend will be available at `http://localhost:3000`
 
+---
+
 ## API Endpoints
 
 - `POST /predict` - Upload MRI scan for analysis
 - `GET /health` - Health check endpoint
+
+---
 
 ## Model Training
 
@@ -94,16 +113,24 @@ The project includes training scripts for:
 
 Refer to the documentation in each directory for training instructions.
 
+---
+
 ## Model Source
 
 The production model is loaded from HuggingFace Hub:
 - Repository: `ThisenEkanayake/brain-tumor-detection`
 - Model: `multiclass-classification/multi_class_resnet.pth`
 
+---
+
 ## License
 
 See [LICENSE](LICENSE) file for details.
 
+---
+
 ## Disclaimer
 
 This tool is for research and educational purposes only. It is not a substitute for professional medical diagnosis or treatment.
+
+---
