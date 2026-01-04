@@ -68,20 +68,204 @@ export const fetchReport = async (analysisId) => {
  * @returns {Promise<Blob>} PDF blob
  */
 export const downloadPDFReport = async (analysisData) => {
-  // Generate a simple text-based report
-  // In a real implementation, you might use a library like jsPDF
-  const reportContent = `BRAINet Analysis Report
-Generated: ${new Date().toLocaleString()}
-
-Analysis Results:
-- Tumor Detection: ${analysisData?.detection?.value || 'N/A'} (${analysisData?.detection?.confidence || 0}% confidence)
-- Classification: ${analysisData?.classification?.value || 'N/A'} (${analysisData?.classification?.confidence || 0}% confidence)
-
-Model Version: ResNet18 Binary Classifier
-
-Disclaimer: This is a research tool and not a substitute for professional medical diagnosis.`;
+  const { jsPDF } = await import('jspdf');
+  const pdf = new jsPDF('p', 'mm', 'a4');
   
-  return new Blob([reportContent], { type: 'text/plain' });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 15;
+  const contentWidth = pageWidth - 2 * margin;
+  let yPos = margin;
+  
+  // Helper function to add image
+  const addImage = async (base64Data, label, width = 80) => {
+    if (!base64Data) return yPos;
+    
+    // Check if we need a new page
+    if (yPos + width + 20 > pageHeight - margin) {
+      pdf.addPage();
+      yPos = margin;
+    }
+    
+    try {
+      // Create image element to get dimensions
+      const img = new Image();
+      img.src = `data:image/png;base64,${base64Data}`;
+      
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          try {
+            const aspectRatio = img.height / img.width;
+            const imgHeight = width * aspectRatio;
+            
+            // Center the image
+            const xPos = (pageWidth - width) / 2;
+            
+            // Add image using base64 data directly
+            pdf.addImage(`data:image/png;base64,${base64Data}`, 'PNG', xPos, yPos, width, imgHeight);
+            yPos += imgHeight + 5;
+            
+            // Add label
+            pdf.setFontSize(10);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(label, pageWidth / 2, yPos, { align: 'center' });
+            yPos += 8;
+            resolve();
+          } catch (error) {
+            console.error('Error adding image to PDF:', error);
+            reject(error);
+          }
+        };
+        img.onerror = () => {
+          console.error('Error loading image');
+          reject(new Error('Failed to load image'));
+        };
+      });
+    } catch (error) {
+      console.error('Error adding image:', error);
+    }
+    
+    return yPos;
+  };
+  
+  // Title
+  pdf.setFontSize(20);
+  pdf.setTextColor(0, 0, 0);
+  pdf.setFont(undefined, 'bold');
+  pdf.text('BRAINet Analysis Report', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 10;
+  
+  // Date and Time
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  const timeStr = now.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  
+  pdf.setFontSize(12);
+  pdf.setFont(undefined, 'normal');
+  pdf.setTextColor(100, 100, 100);
+  pdf.text(`Generated: ${dateStr} at ${timeStr}`, pageWidth / 2, yPos, { align: 'center' });
+  yPos += 15;
+  
+  // Analysis Results Section
+  pdf.setFontSize(14);
+  pdf.setFont(undefined, 'bold');
+  pdf.setTextColor(0, 0, 0);
+  pdf.text('Analysis Results', margin, yPos);
+  yPos += 8;
+  
+  pdf.setFontSize(11);
+  pdf.setFont(undefined, 'normal');
+  
+  // Tumor Detection
+  const detectionValue = analysisData?.detection?.value || 'N/A';
+  const detectionConfidence = analysisData?.detection?.confidence || 0;
+  pdf.text(`Tumor Detection: ${detectionValue}`, margin, yPos);
+  yPos += 6;
+  pdf.text(`Confidence: ${detectionConfidence}%`, margin + 5, yPos);
+  yPos += 8;
+  
+  // Tumor Type (if present)
+  const classificationValue = analysisData?.classification?.value || 'N/A';
+  const classificationConfidence = analysisData?.classification?.confidence || 0;
+  
+  if (detectionValue === 'Tumor Present' && classificationValue !== 'notumor') {
+    pdf.text(`Tumor Type: ${classificationValue.charAt(0).toUpperCase() + classificationValue.slice(1)}`, margin, yPos);
+    yPos += 6;
+    pdf.text(`Classification Confidence: ${classificationConfidence}%`, margin + 5, yPos);
+    yPos += 10;
+  } else {
+    pdf.text(`Classification: ${classificationValue.charAt(0).toUpperCase() + classificationValue.slice(1)}`, margin, yPos);
+    yPos += 10;
+  }
+  
+  // Original MRI Image
+  if (analysisData?.visualizations?.original) {
+    if (yPos + 100 > pageHeight - margin) {
+      pdf.addPage();
+      yPos = margin;
+    }
+    pdf.setFontSize(12);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Original MRI Image', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 8;
+    yPos = await addImage(analysisData.visualizations.original, 'Original MRI Scan', 80);
+    yPos += 5;
+  }
+  
+  // GradCAM Heatmap with Bounding Box
+  if (analysisData?.visualizations?.bounding_box) {
+    if (yPos + 100 > pageHeight - margin) {
+      pdf.addPage();
+      yPos = margin;
+    }
+    pdf.setFontSize(12);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('GradCAM Heatmap with Bounding Box', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 8;
+    yPos = await addImage(analysisData.visualizations.bounding_box, 'GradCAM Visualization with Bounding Box', 80);
+    yPos += 5;
+  }
+  
+  // Disclaimer Section (Highlighted)
+  if (yPos + 60 > pageHeight - margin) {
+    pdf.addPage();
+    yPos = margin;
+  }
+  
+  yPos += 10;
+  pdf.setFontSize(12);
+  pdf.setFont(undefined, 'bold');
+  pdf.setTextColor(200, 0, 0); // Red color for emphasis
+  pdf.text('IMPORTANT DISCLAIMER', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 8;
+  
+  // Draw highlighted box
+  const disclaimerY = yPos - 2;
+  const disclaimerHeight = 35;
+  pdf.setDrawColor(200, 0, 0);
+  pdf.setLineWidth(0.5);
+  pdf.rect(margin, disclaimerY, contentWidth, disclaimerHeight);
+  
+  // Fill with light red background
+  pdf.setFillColor(255, 240, 240);
+  pdf.rect(margin, disclaimerY, contentWidth, disclaimerHeight, 'F');
+  pdf.rect(margin, disclaimerY, contentWidth, disclaimerHeight); // Redraw border
+  
+  // Disclaimer text
+  pdf.setFontSize(9);
+  pdf.setFont(undefined, 'normal');
+  pdf.setTextColor(0, 0, 0);
+  
+  const disclaimerText = [
+    'BRAINet is designed as a research and educational tool to advance medical AI',
+    'capabilities. It is not intended to replace professional medical diagnosis,',
+    'treatment, or clinical decision-making. All results should be interpreted by',
+    'qualified healthcare professionals, and the system should be used in',
+    'conjunction with established medical protocols and guidelines.',
+    '',
+    'Important: This tool is for research purposes only and should not be used',
+    'as the sole basis for medical decisions.'
+  ];
+  
+  let disclaimerYPos = disclaimerY + 5;
+  disclaimerText.forEach(line => {
+    pdf.text(line, margin + 2, disclaimerYPos);
+    disclaimerYPos += 4;
+  });
+  
+  yPos = disclaimerY + disclaimerHeight + 10;
+  
+  // Generate PDF blob
+  const pdfBlob = pdf.output('blob');
+  return pdfBlob;
 };
 
 /**
