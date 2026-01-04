@@ -139,7 +139,7 @@ const ReportsPage = () => {
           </div>
         )}
 
-        {/* Analysis History */}
+        {/* Analysis History
         <div className="card">
           <div className="flex items-center justify-between mb-6">
             <h2 className={`text-2xl font-bold ${
@@ -215,6 +215,7 @@ const ReportsPage = () => {
             </div>
           )}
         </div>
+        */}
 
         {/* Download Section */}
         <div className="mt-12 text-center">
