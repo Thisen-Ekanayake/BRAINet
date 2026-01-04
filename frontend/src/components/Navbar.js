@@ -25,7 +25,11 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <div className="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">B</span>
+              <img
+                src="https://brainet-assets.thiesnekanayake.me/brain.png"
+                alt="BRAINet"
+                className="w-8 h-8 object-contain"
+              />
             </div>
             <span className={`text-2xl font-bold ${
               isDarkMode ? 'text-white' : 'text-gray-900'
