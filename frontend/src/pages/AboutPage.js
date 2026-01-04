@@ -39,17 +39,7 @@ const AboutPage = () => {
       name: 'BraTS (Brain Tumor Segmentation)',
       description: 'Multi-institutional dataset for brain tumor segmentation challenges.',
       source: 'Medical Image Computing and Computer Assisted Intervention Society',
-    },
-    {
-      name: 'Figshare Brain MRI Dataset',
-      description: 'Comprehensive collection of brain MRI scans for research purposes.',
-      source: 'Figshare Digital Repository',
-    },
-    {
-      name: 'Kaggle Brain MRI Images',
-      description: 'Community-contributed dataset for brain tumor classification.',
-      source: 'Kaggle Community',
-    },
+    }
   ];
 
   const features = [
@@ -68,7 +58,11 @@ const AboutPage = () => {
         <div className="text-center mb-16">
           <div className="flex justify-center mb-8">
             <div className="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center shadow-2xl">
-              <span className="text-white font-bold text-3xl">B</span>
+              <img
+                src="https://brainet-assets.thisenekanayake.me/brain.png"
+                alt="BRAINet"
+                className="w-12 h-12 object-contain"
+              />
             </div>
           </div>
           <h1 className={`text-4xl font-bold mb-4 ${
@@ -266,12 +260,19 @@ const AboutPage = () => {
               to improve accuracy, expand capabilities, and enhance user experience.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="btn-primary">
+              {/*
+              <button className="btn-secondary">
                 View Research Papers
               </button>
-              <button className="btn-secondary">
+              */}
+              <a
+                href="https://github.com/Thisen-Ekanayake/BRAINet.git"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+              >
                 Contribute to Development
-              </button>
+              </a>
             </div>
           </div>
         </section>
