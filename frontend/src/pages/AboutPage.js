@@ -39,17 +39,7 @@ const AboutPage = () => {
       name: 'BraTS (Brain Tumor Segmentation)',
       description: 'Multi-institutional dataset for brain tumor segmentation challenges.',
       source: 'Medical Image Computing and Computer Assisted Intervention Society',
-    },
-    {
-      name: 'Figshare Brain MRI Dataset',
-      description: 'Comprehensive collection of brain MRI scans for research purposes.',
-      source: 'Figshare Digital Repository',
-    },
-    {
-      name: 'Kaggle Brain MRI Images',
-      description: 'Community-contributed dataset for brain tumor classification.',
-      source: 'Kaggle Community',
-    },
+    }
   ];
 
   const features = [
