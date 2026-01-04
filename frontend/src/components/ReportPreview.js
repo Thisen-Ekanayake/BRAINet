@@ -18,6 +18,7 @@ const ReportPreview = ({ analysisData }) => {
         }`}>
           Analysis Report
         </h2>
+        {/*
         <button
           onClick={handleDownloadPDF}
           className="btn-primary flex items-center space-x-2"
@@ -27,6 +28,7 @@ const ReportPreview = ({ analysisData }) => {
           </svg>
           <span>Download PDF</span>
         </button>
+        */}
       </div>
 
       <div className="space-y-6">
