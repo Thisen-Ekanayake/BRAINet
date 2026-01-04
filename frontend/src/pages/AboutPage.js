@@ -59,7 +59,7 @@ const AboutPage = () => {
           <div className="flex justify-center mb-8">
             <div className="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center shadow-2xl">
               <img
-                src="https://brainet-assets.thiesnekanayake.me/brain.png"
+                src="https://brainet-assets.thisenekanayake.me/brain.png"
                 alt="BRAINet"
                 className="w-12 h-12 object-contain"
               />

@@ -26,7 +26,7 @@ const Navbar = () => {
           <Link to="/" className="flex items-center space-x-3">
             <div className="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
               <img
-                src="https://brainet-assets.thiesnekanayake.me/brain.png"
+                src="https://brainet-assets.thisenekanayake.me/brain.png"
                 alt="BRAINet"
                 className="w-8 h-8 object-contain"
               />
