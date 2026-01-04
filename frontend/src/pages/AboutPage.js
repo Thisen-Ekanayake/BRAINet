@@ -260,12 +260,19 @@ const AboutPage = () => {
               to improve accuracy, expand capabilities, and enhance user experience.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="btn-primary">
+              {/*
+              <button className="btn-secondary">
                 View Research Papers
               </button>
-              <button className="btn-secondary">
+              */}
+              <a
+                href="https://github.com/Thisen-Ekanayake/BRAINet.git"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+              >
                 Contribute to Development
-              </button>
+              </a>
             </div>
           </div>
         </section>
