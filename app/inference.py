@@ -36,6 +36,11 @@ def predict(model, device, image_path, target_layer):
     _, bbox_png = cv2.imencode('.png', bbox)
     bbox_b64 = base64.b64encode(bbox_png).decode('utf-8')
 
+    # Read and encode original image
+    original_img = cv2.imread(image_path)
+    _, original_png = cv2.imencode('.png', original_img)
+    original_b64 = base64.b64encode(original_png).decode('utf-8')
+
     return {
         "prediction": pred_class,
         "confidence": confidence,
@@ -43,6 +48,7 @@ def predict(model, device, image_path, target_layer):
             CLASS_NAMES[i]: float(probs[i]) for i in range(len(CLASS_NAMES))
         },
         "visualizations": {
+            "original": original_b64,
             "heatmap": heatmap_b64,
             "bounding_box": bbox_b64
         }
