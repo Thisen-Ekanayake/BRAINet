@@ -127,6 +127,86 @@ export const downloadPDFReport = async (analysisData) => {
     
     return yPos;
   };
+
+  // Helper function to add two images side by side
+  const addSideBySideImages = async (base64Data1, label1, base64Data2, label2, width = 70) => {
+    if (!base64Data1 && !base64Data2) return yPos;
+    
+    try {
+      const gap = 10; // Gap between images
+      const totalWidth = width * 2 + gap;
+      const startX = (pageWidth - totalWidth) / 2;
+      
+      let maxHeight = 0;
+      let img1Height = 0;
+      let img2Height = 0;
+      
+      // Load both images to get dimensions
+      const promises = [];
+      
+      if (base64Data1) {
+        promises.push(new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = `data:image/png;base64,${base64Data1}`;
+          img.onload = () => {
+            const aspectRatio = img.height / img.width;
+            img1Height = width * aspectRatio;
+            maxHeight = Math.max(maxHeight, img1Height);
+            resolve();
+          };
+          img.onerror = () => reject(new Error('Failed to load image 1'));
+        }));
+      }
+      
+      if (base64Data2) {
+        promises.push(new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = `data:image/png;base64,${base64Data2}`;
+          img.onload = () => {
+            const aspectRatio = img.height / img.width;
+            img2Height = width * aspectRatio;
+            maxHeight = Math.max(maxHeight, img2Height);
+            resolve();
+          };
+          img.onerror = () => reject(new Error('Failed to load image 2'));
+        }));
+      }
+      
+      await Promise.all(promises);
+      
+      // Check if we need a new page
+      if (yPos + maxHeight + 30 > pageHeight - margin) {
+        pdf.addPage();
+        yPos = margin;
+      }
+      
+      // Add first image (left)
+      if (base64Data1) {
+        pdf.addImage(`data:image/png;base64,${base64Data1}`, 'PNG', startX, yPos, width, img1Height);
+        // Add label below first image
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(label1, startX + width / 2, yPos + img1Height + 4, { align: 'center' });
+      }
+      
+      // Add second image (right)
+      if (base64Data2) {
+        const xPos2 = startX + width + gap;
+        pdf.addImage(`data:image/png;base64,${base64Data2}`, 'PNG', xPos2, yPos, width, img2Height);
+        // Add label below second image
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(label2, xPos2 + width / 2, yPos + img2Height + 4, { align: 'center' });
+      }
+      
+      yPos += maxHeight + 15;
+      
+    } catch (error) {
+      console.error('Error adding side-by-side images:', error);
+    }
+    
+    return yPos;
+  };
   
   // Title
   pdf.setFontSize(20);
@@ -200,17 +280,23 @@ export const downloadPDFReport = async (analysisData) => {
     yPos += 5;
   }
   
-  // GradCAM Heatmap with Bounding Box
-  if (analysisData?.visualizations?.bounding_box) {
+  // GradCAM Heatmap and Bounding Box side by side
+  if (analysisData?.visualizations?.heatmap || analysisData?.visualizations?.bounding_box) {
     if (yPos + 100 > pageHeight - margin) {
       pdf.addPage();
       yPos = margin;
     }
     pdf.setFontSize(12);
     pdf.setFont(undefined, 'bold');
-    pdf.text('GradCAM Heatmap with Bounding Box', pageWidth / 2, yPos, { align: 'center' });
+    pdf.text('GradCAM Visualizations', pageWidth / 2, yPos, { align: 'center' });
     yPos += 8;
-    yPos = await addImage(analysisData.visualizations.bounding_box, 'GradCAM Visualization with Bounding Box', 80);
+    yPos = await addSideBySideImages(
+      analysisData.visualizations.heatmap,
+      'Heatmap',
+      analysisData.visualizations.bounding_box,
+      'Bounding Box',
+      70
+    );
     yPos += 5;
   }
   
