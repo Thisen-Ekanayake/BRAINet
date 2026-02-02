@@ -17,8 +17,9 @@ MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 STD  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
 MODELS = {
-    "ONNX_FP32": "tumor_resnet.onnx",
-    "ONNX_INT8": "tumor_resnet_int8.onnx"
+    "ONNX_FP32": "onnx/tumor_resnet.onnx",
+    "ONNX_FP16": "onnx/tumor_resnet_fp16.onnx",
+    "ONNX_INT8": "onnx/tumor_resnet_int8.onnx"
 }
 
 # class order MUST match ImageFolder.classes
