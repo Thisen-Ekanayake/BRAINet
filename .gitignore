@@ -223,6 +223,8 @@ node_modules/
 *.h5
 *.zip
 *.txt
+*.onnx
+*.onnx.data
 
 !Brain_Tumor_Detection_Pipeline_(Binary_Classification).pdf
 
