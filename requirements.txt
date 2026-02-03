@@ -6,3 +6,4 @@ fastapi
 uvicorn[standard]
 huggingface_hub
 python-multipart
+opencv-python-headless
