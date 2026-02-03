@@ -6,3 +6,9 @@ fastapi
 uvicorn[standard]
 huggingface_hub
 python-multipart
+onnxruntime
+onnxruntime-tools
+onnxconverter-common
+onnx
+onnxscript
+opencv-python
