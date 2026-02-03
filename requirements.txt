@@ -11,4 +11,3 @@ onnxruntime-tools
 onnxconverter-common
 onnx
 onnxscript
-opencv-python

@@ -1,9 +1,10 @@
 import torch
+import numpy as np
 from torchvision import transforms
 from PIL import Image
 from gradcam_pp import run_gradcam
 import base64
-import cv2
+from io import BytesIO
 
 CLASS_NAMES = ["glioma", "meningioma", "notumor", "pituitary"]
 
@@ -30,16 +31,15 @@ def predict(model, device, image_path, target_layer):
 
     heatmap, bbox = run_gradcam(model, device, image_path, target_layer)
 
-    _, heatmap_png = cv2.imencode('.png', heatmap)
-    heatmap_b64 = base64.b64encode(heatmap_png).decode('utf-8')
+    def _encode_png(arr):
+        buf = BytesIO()
+        Image.fromarray(arr).save(buf, format="PNG")
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
 
-    _, bbox_png = cv2.imencode('.png', bbox)
-    bbox_b64 = base64.b64encode(bbox_png).decode('utf-8')
-
-    # Read and encode original image
-    original_img = cv2.imread(image_path)
-    _, original_png = cv2.imencode('.png', original_img)
-    original_b64 = base64.b64encode(original_png).decode('utf-8')
+    heatmap_b64 = _encode_png(heatmap)
+    bbox_b64 = _encode_png(bbox)
+    original_img = np.array(Image.open(image_path).convert("RGB"))
+    original_b64 = _encode_png(original_img)
 
     return {
         "prediction": pred_class,
