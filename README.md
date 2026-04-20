@@ -6,6 +6,8 @@ An AI-powered web application for comprehensive MRI scan analysis, featuring bra
 
 ## End-to-End Pipeline
 
+<video controls autoplay muted loop playsinline src="demo.mp4" title="Title"></video>
+
 The high-level architecture of the system is shown below.
 ![BRAINet Pipeline](docs/BRAINet.png)
 
