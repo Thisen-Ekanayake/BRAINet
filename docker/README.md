@@ -13,7 +13,9 @@ docker build -f docker/Dockerfile -t brainet:latest .
 ```
 
 The ResNet18 weights are pulled from Hugging Face and baked into the image at
-build time. For an offline build that skips this step:
+build time. This is best-effort: if Hugging Face is unreachable or rate-limits
+the build (HTTP 429), the build still succeeds and the app downloads the weights
+on first startup instead. To skip the attempt entirely (offline build):
 
 ```bash
 docker build -f docker/Dockerfile --build-arg PREFETCH_MODEL=false -t brainet:latest .

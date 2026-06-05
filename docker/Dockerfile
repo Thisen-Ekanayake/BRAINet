@@ -28,12 +28,16 @@ RUN pip install --no-cache-dir \
 COPY docker/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 3) Pre-bake the model weights into the image so the container starts fast and
-#    works without reaching Hugging Face at runtime. Disable with
-#    --build-arg PREFETCH_MODEL=false for an offline/air-gapped build.
+# 3) Best-effort: pre-bake the model weights into the image so the container
+#    starts fast and works without reaching Hugging Face at runtime. This is an
+#    optimization only — if Hugging Face is unreachable or rate-limits the build
+#    (HTTP 429, common on shared CI runners), we log a warning and let the app
+#    download the weights on first startup instead (see app/model_loader.py).
+#    Skip the attempt entirely with --build-arg PREFETCH_MODEL=false.
 ARG PREFETCH_MODEL=true
 RUN if [ "$PREFETCH_MODEL" = "true" ]; then \
-        python -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='ThisenEkanayake/brain-tumor-detection', filename='multiclass-classification/multi_class_resnet.pth')"; \
+        python -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='ThisenEkanayake/brain-tumor-detection', filename='multiclass-classification/multi_class_resnet.pth')" \
+        || echo "WARNING: model prefetch failed; weights will be downloaded at runtime"; \
     fi
 
 # 4) Application code (only what the API serving path needs).
