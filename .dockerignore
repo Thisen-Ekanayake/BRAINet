@@ -1,0 +1,54 @@
+# The Docker build context is the repository root, but the image only needs
+# app/ and gradcam_pp.py. Everything below is excluded to keep the context
+# small and builds fast.
+
+# VCS / envs / caches
+.git/
+.github/
+.venv/
+venv/
+env/
+ENV/
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Frontend (deployed separately)
+frontend/
+
+# Datasets, training artifacts & notebooks
+Dataset/
+Dataset_binary/
+Dataset_multi_class/
+classification_binary/
+classification_multi_class/
+segmentation_with_unet/
+gradcam/
+onnx/
+edge_inference/
+charts/
+png/
+temp/
+archive/
+brain-tumor-detection/
+docs/
+
+# Large media & weights (model is pulled from Hugging Face at build/runtime)
+*.pth
+*.onnx
+*.onnx.data
+*.h5
+*.zip
+*.pdf
+*.docx
+*.gif
+*.png
+*.jpg
+*.jpeg
+*.mp4
+
+# Misc
+DOCUMENTATION.md
+*.log

@@ -1,0 +1,12 @@
+# Runtime dependencies for the BRAINet API container.
+# NOTE: torch + torchvision are installed separately from the CPU wheel index
+# inside docker/Dockerfile, so they are intentionally NOT listed here.
+# The onnx*/albumentations packages from the project's root requirements.txt
+# are training/export-only and not needed by the FastAPI serving path.
+
+fastapi
+uvicorn[standard]
+huggingface_hub
+python-multipart
+numpy
+pillow

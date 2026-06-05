@@ -1,0 +1,15 @@
+# Local convenience wrapper. Build context is the repo root (one level up).
+#   docker compose -f docker/docker-compose.yml up --build
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ghcr.io/thisen-ekanayake/brainet:latest
+    container_name: brainet-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Comma-separated list of origins allowed by CORS (see app/main.py).
+      - ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+    restart: unless-stopped
